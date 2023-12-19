@@ -10,42 +10,85 @@ const db = SQLite.openDatabase(
 );
 
 export const initDatabase = () => {
-  console.log("Initializing Database...");
-  db.transaction((tx) => {
-    tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, phoneNumber TEXT, subject TEXT)',
-      [],
-      () => {},
+  console.log('Initializing Database...');
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, phoneNumber TEXT, subject TEXT)',
+          [],
+          () => {
+            console.log('Table created');
+            resolve();
+          },
+          (error) => {
+            console.error('Error creating users table', error);
+            reject(error);
+          }
+        );
+      },
       (error) => {
-        console.error('Error creating users table', error);
+        console.error('Transaction error', error);
+        reject(error);
+      },
+      () => {
+        console.log('Transaction successful');
       }
     );
   });
 };
 
 export const addUserToDatabase = (userData) => {
-  db.transaction((tx) => {
-    tx.executeSql(
-      'INSERT INTO users (username, phoneNumber, subject) VALUES (?, ?, ?)',
-      [userData.username, userData.phoneNumber, userData.subject],
-      () => {},
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          'INSERT INTO users (username, phoneNumber, subject) VALUES (?, ?, ?)',
+          [userData.username, userData.phoneNumber, userData.subject],
+          (_, results) => {
+            console.log('User added successfully', results);
+            resolve(results);
+          },
+          (error) => {
+            console.error('Error adding user to database', error);
+            reject(error);
+          }
+        );
+      },
       (error) => {
-        console.error('Error adding user to database', error);
+        console.error('Transaction error', error);
+        reject(error);
+      },
+      () => {
+        console.log('Transaction successful');
       }
     );
   });
 };
 
 export const fetchUserDataFromDatabase = (dispatch) => {
-  db.transaction((tx) => {
-    tx.executeSql(
-      'SELECT * FROM users',
-      [],
-      (_, { rows: { _array } }) => {
-        dispatch(setUserData(_array));
+  return new Promise((resolve, reject) => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          'SELECT * FROM users',
+          [],
+          (_, { rows: { _array } }) => {
+            dispatch(setUserData(_array));
+            resolve(_array);
+          },
+          (error) => {
+            console.error('Error fetching user data from database', error);
+            reject(error);
+          }
+        );
       },
       (error) => {
-        console.error('Error fetching user data from database', error);
+        console.error('Transaction error', error);
+        reject(error);
+      },
+      () => {
+        console.log('Transaction successful');
       }
     );
   });

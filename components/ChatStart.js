@@ -53,6 +53,7 @@ export default function ChatStart({ navigation }) {
       // Display an error message or handle the case where the phone number length is not valid
       return;
     }
+
     console.log("Form Submitted:", formData);
     dispatch(addRegister(formData));
 
