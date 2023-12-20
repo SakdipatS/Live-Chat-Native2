@@ -66,11 +66,10 @@ export default function ChatBox() {
     if (socket) {
       console.log("Socket is connected:", socket.connected);
 
-      socket.on("connect", () => {
-        socket.on("messageFormServer", (data) => {
-          postChat(data.data);
-        });
+      socket.on("messageFormServer", (data) => {
+        postChat(data.data);
       });
+      
     } else {
       console.log("Socket is not available");
     }
