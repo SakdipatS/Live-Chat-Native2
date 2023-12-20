@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,26 +9,58 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import arrowDown from "../assets/arrow-down.png";
-import { useDispatch } from "react-redux";
-import { addRegister } from "../store/Reducer";
+import { useDispatch, useSelector } from "react-redux";
+import { addRegister, selectUser } from "../store/Reducer";
 import { useSocket } from "./SocketContext";
+import {
+  clearAllData,
+  fetchUserDataFromDatabase,
+  initDatabase,
+  insertUser,
+} from "../database";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function ChatStart({ navigation }) {
-  
+  const register = useSelector(selectUser);
+  const dispatch = useDispatch();
+  const socket = useSocket();
   const [formData, setFormData] = useState({
     username: "",
     phoneNumber: "",
     subject: "",
   });
-  
-  const dispatch = useDispatch();
-  const socket = useSocket();
 
-  const [errorMessage, setErrorMessage] = useState("");
+  useFocusEffect(
+    React.useCallback(() => {
+      // Update formData with data from Redux
+      setFormData({
+        username: register.username || "",
+        phoneNumber: register.phoneNumber || "",
+        subject: register.subject || "",
+      });
+    }, [register])
+  );
+
+  useEffect(() => {
+    initDatabase();
+    const fetchData = async () => {
+      console.log("inside fetch");
+      try {
+        const userData = await fetchUserDataFromDatabase();
+        if (userData) {
+          console.log("go navigate " + userData.username);
+          dispatch(addRegister(userData));
+          navigation.navigate("ChatBox", { socketData: userData });
+        }
+      } catch (error) {
+        console.error("Error fetching user data", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleChange = (name, value) => {
     if (
@@ -54,20 +86,16 @@ export default function ChatStart({ navigation }) {
       return;
     }
 
-    console.log("Form Submitted:", formData);
-    dispatch(addRegister(formData));
-
-    // try {
-    //   const newUser = await addUser(formData);
-    //   console.log('User added successfully:', newUser);
-    // } catch (error) {
-    //   console.log("Error adding user", error)
-    // }
-
-    const socketData = {
+    try {
+      const insertedUser = await insertUser(formData);
+      dispatch(addRegister(formData));
+      const socketData = {
         id: socket.id,
       };
-    navigation.navigate("ChatBox", {socketData});
+      navigation.navigate("ChatBox", { socketData });
+    } catch (error) {
+      console.error("Error inserting user:", error);
+    }
   };
 
   const [value, setValue] = useState(null);
@@ -76,7 +104,7 @@ export default function ChatStart({ navigation }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState("Topup or Deposit");
   const data = ["Topup", "Deposit"];
-  
+
   const toggleSelect = () => {
     setIsOpen(!isOpen);
   };
@@ -91,8 +119,11 @@ export default function ChatStart({ navigation }) {
     Keyboard.dismiss();
   };
 
+  const handleClearData = () => {
+    clearAllData();
+  };
+
   return (
-    // <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height' } style={styles.box}>
     <TouchableWithoutFeedback onPress={handleTouchablePress}>
       <View style={styles.box}>
         <View style={styles.inner}>
@@ -179,7 +210,6 @@ export default function ChatStart({ navigation }) {
         </View>
       </View>
     </TouchableWithoutFeedback>
-    // </KeyboardAvoidingView>
   );
 }
 const styles = StyleSheet.create({

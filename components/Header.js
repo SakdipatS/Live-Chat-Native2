@@ -1,10 +1,14 @@
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View, Image, SafeAreaView } from "react-native";
+import { StyleSheet, Text, View, Image, SafeAreaView, Button } from "react-native";
 import logo from "../assets/livechat.png";
 import arrowDown from "../assets/arrow-down.png"
+import { clearAllData } from "../database";
 
 export default function Header() {
+  const handleClearData = () => {
+    clearAllData();
+  };
   return (
     <LinearGradient
       start={{ x: 0, y: 1 }}
@@ -18,6 +22,7 @@ export default function Header() {
           <Text style={styles.headtext}>LiveChat</Text>
           <Text style={styles.text}>You are chatting with CS862</Text>
         </View>
+        {/* <Button title="Clear All Data" onPress={handleClearData} /> */}
       </View>
       <Image source={arrowDown} style={styles.down} />
     </LinearGradient>

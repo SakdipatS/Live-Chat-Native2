@@ -6,7 +6,7 @@ import {
   View,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
 } from "react-native";
 import Header from "./components/Header";
 import ChatStart from "./components/ChatStart";
@@ -21,7 +21,6 @@ import { useEffect } from "react";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
-
 
   return (
     <KeyboardAvoidingView

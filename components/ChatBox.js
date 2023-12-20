@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  Button,
 } from "react-native";
 import moment from "moment";
 import iconMore from "../assets/iconMore.png";
@@ -19,11 +20,18 @@ import image from "../assets/image.png";
 import iconsend from "../assets/iconsend.png";
 import { useSocket } from "./SocketContext";
 import { useDispatch, useSelector } from "react-redux";
-import { selectUser } from "../store/Reducer";
+import { addRegister, selectUser } from "../store/Reducer";
+import { useNavigation } from "@react-navigation/native";
+import {
+  clearAllData,
+  fetchUserDataFromDatabase,
+  initDatabase,
+} from "../database";
 
-const screenWidth =Dimensions.get('window').width;
+const screenWidth = Dimensions.get("window").width;
 
 export default function ChatBox() {
+  const navigation = useNavigation();
   const socket = useSocket();
   const [messages, setMessages] = useState([]);
   const chatWindowRef = useRef(null);
@@ -33,12 +41,32 @@ export default function ChatBox() {
   const [checked, setChecked] = useState(false);
   const toggleChecked = () => setChecked((value) => !value);
 
+  
+    useEffect(() => {
+    initDatabase();
+    const fetchData = async () => {
+      console.log("inside fetch");
+      try {
+        const userData = await fetchUserDataFromDatabase();
+        if(!userData) {
+          console.log("go back navigate "+userData.username);
+          navigation.goBack();
+        } else {
+          dispatch(addRegister(userData));
+          console.log("come to chatbox "+ register.username);
+        }
+      } catch (error) {
+        console.error("Error fetching user data", error)
+      }
+    }
+    fetchData();
+  }, [navigation]);
+
   useEffect(() => {
     if (socket) {
       console.log("Socket is connected:", socket.connected);
 
       socket.on("connect", () => {
-        console.log("Socket connected");
         socket.on("messageFormServer", (data) => {
           postChat(data.data);
         });
@@ -46,7 +74,7 @@ export default function ChatBox() {
     } else {
       console.log("Socket is not available");
     }
-  }, [socket]);
+  }, [socket, dispatch, register]);
 
   const postChat = (data) => {
     const { message, sender } = data;
@@ -120,11 +148,7 @@ export default function ChatBox() {
               >
                 <View style={styles.flr}>
                   <View style={styles.messages}>
-                    <Text
-                      style={styles.msg}
-                    >
-                      {msg.message}
-                    </Text>
+                    <Text style={styles.msg}>{msg.message}</Text>
                   </View>
                 </View>
               </View>
@@ -233,22 +257,22 @@ const styles = StyleSheet.create({
   msgBox: {
     margin: 10,
     borderRadius: 8,
-    maxWidth: 0.65* screenWidth,
+    maxWidth: 0.65 * screenWidth,
   },
   flr: {
     flex: 1,
     display: "flex",
     backgroundColor: "transparent",
     flexDirection: "column",
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: "100%",
   },
   messages: {
     marginVertical: 5,
     marginHorizontal: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     flex: 1,
     backgroundColor: "transparent",
   },

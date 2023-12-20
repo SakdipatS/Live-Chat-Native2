@@ -1,94 +1,90 @@
-// SQLite Database Setup (Database.js)
-import SQLite from 'react-native-sqlite-storage';
+// Database.js
+import * as SQLite from "expo-sqlite"; // Assuming you're using Expo SQLite, adjust if necessary
+import { setUserData } from "./store/action";
+import { addRegister, selectUser } from "./store/Reducer";
+import { useSelector } from "react-redux";
 
-const db = SQLite.openDatabase(
-  { name: 'mydatabase.db', location: 'default' },
-  () => {},
-  (error) => {
-    console.error('Error opening database', error);
-  }
-);
+const db = SQLite.openDatabase("your_database_name.db");
 
 export const initDatabase = () => {
-  console.log('Initializing Database...');
-  return new Promise((resolve, reject) => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, phoneNumber TEXT, subject TEXT)',
-          [],
-          () => {
-            console.log('Table created');
-            resolve();
-          },
-          (error) => {
-            console.error('Error creating users table', error);
-            reject(error);
-          }
-        );
+  db.transaction((tx) => {
+    tx.executeSql(
+      "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, phoneNumber TEXT, subject TEXT);",
+      [],
+      (_, result) => {
+        console.log("Database initialized:", result);
       },
-      (error) => {
-        console.error('Transaction error', error);
-        reject(error);
-      },
-      () => {
-        console.log('Transaction successful');
+      (_, error) => {
+        console.log("Error initializing database:", error);
       }
     );
   });
 };
 
-export const addUserToDatabase = (userData) => {
+export const insertUser = (formData) => {
+  const { username, phoneNumber, subject } = formData;
+
   return new Promise((resolve, reject) => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          'INSERT INTO users (username, phoneNumber, subject) VALUES (?, ?, ?)',
-          [userData.username, userData.phoneNumber, userData.subject],
-          (_, results) => {
-            console.log('User added successfully', results);
-            resolve(results);
-          },
-          (error) => {
-            console.error('Error adding user to database', error);
-            reject(error);
-          }
-        );
-      },
-      (error) => {
-        console.error('Transaction error', error);
-        reject(error);
-      },
-      () => {
-        console.log('Transaction successful');
-      }
-    );
+    db.transaction((tx) => {
+      tx.executeSql(
+        "INSERT INTO users (username, phoneNumber, subject) VALUES (?, ?, ?);",
+        [username, phoneNumber, subject],
+        (_, { rowsAffected, insertId }) => {
+          console.log("User inserted successfully: ", rowsAffected);
+          console.log("Inserted user data:", {
+            id: insertId,
+            username,
+            phoneNumber,
+            subject,
+          });
+          resolve({ id: insertId, username, phoneNumber, subject });
+        },
+        (_, error) => {
+          console.log("SQLite.executeSql: ", error);
+          reject(error);
+        }
+      );
+    });
   });
 };
 
-export const fetchUserDataFromDatabase = (dispatch) => {
+
+export const fetchUserDataFromDatabase = () => {
   return new Promise((resolve, reject) => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          'SELECT * FROM users',
-          [],
-          (_, { rows: { _array } }) => {
-            dispatch(setUserData(_array));
-            resolve(_array);
-          },
-          (error) => {
-            console.error('Error fetching user data from database', error);
-            reject(error);
+    db.transaction((tx) => {
+      tx.executeSql(
+        "SELECT username, phoneNumber, subject FROM users ORDER BY id DESC LIMIT 1",
+        [],
+        (_, { rows: { _array } }) => {
+          if (_array.length > 0) {
+            resolve({
+              username: _array[0].username,
+              phoneNumber: _array[0].phoneNumber,
+              subject: _array[0].subject,
+            });
+          } else {
+            resolve(null);
           }
-        );
+        },
+        (error) => {
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+
+export const clearAllData = () => {
+  db.transaction((tx) => {
+    tx.executeSql(
+      "DELETE FROM users",
+      [],
+      (_, { rowsAffected }) => {
+        console.log(`Cleared ${rowsAffected} rows from the users table.`);
       },
-      (error) => {
-        console.error('Transaction error', error);
-        reject(error);
-      },
-      () => {
-        console.log('Transaction successful');
+      (_, error) => {
+        console.error("Error clearing data from the users table:", error);
       }
     );
   });
