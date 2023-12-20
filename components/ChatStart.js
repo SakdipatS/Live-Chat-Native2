@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     justifyContent: "space-between",
     padding: 40,
-    backgroundColor: "#22282a",
+    backgroundColor: "#171B1C",
   },
   inner: {
     justifyContent: "center",

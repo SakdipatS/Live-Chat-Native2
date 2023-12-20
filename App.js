@@ -37,7 +37,7 @@ export default function App() {
         <SafeAreaView
           style={{
             flex: 1,
-            backgroundColor: "#22282a",
+            backgroundColor: "#171B1C",
           }}
         >
           <SocketProvider>
