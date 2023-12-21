@@ -11,6 +11,7 @@ import {
   Platform,
   Dimensions,
   Button,
+  Keyboard,
 } from "react-native";
 import moment from "moment";
 import iconMore from "../assets/iconMore.png";
@@ -41,7 +42,6 @@ export default function ChatBox() {
   const [checked, setChecked] = useState(false);
   const toggleChecked = () => setChecked((value) => !value);
 
-  
     useEffect(() => {
     initDatabase();
     const fetchData = async () => {
@@ -78,6 +78,10 @@ export default function ChatBox() {
   const postChat = (data) => {
     const { message, sender } = data;
 
+    Image.prefetch(sender.avatar)
+    .then(() => console.log('Image prefetch successful'))
+    .catch((error) => console.error('Image prefetch error:', error));
+
     setMessages((prevMessages) => [
       ...prevMessages,
       {
@@ -87,6 +91,7 @@ export default function ChatBox() {
       },
     ]);
   };
+
 
   const sendMessage = () => {
     if (text !== "") {
@@ -100,6 +105,15 @@ export default function ChatBox() {
   useEffect(() => {
     chatWindowRef.current.scrollToEnd({ animated: true });
   }, [messages]);
+
+  useEffect(() => {
+    messages.forEach((msg) => {
+      Image.prefetch(msg.sender.avatar)
+        .then(() => console.log('Image prefetch successful'))
+        .catch((error) => console.error('Image prefetch error:', error));
+    });
+  }, [messages]);
+  
 
   return (
     <View style={{ flex: 1 }}>
@@ -200,6 +214,7 @@ const styles = StyleSheet.create({
   },
   check: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
   },
   chatInput: {
@@ -208,17 +223,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
+  more: {
+    height: 20,
+    width: 20,
+  },
   iconBack: {
     height: 20,
     width: 20,
   },
   emojiMobile: {
-    height: 25,
-    width: 25,
+    height: 20,
+    width: 20,
   },
   iconImageMobile: {
-    height: 25,
-    width: 25,
+    height: 20,
+    width: 20,
   },
   iconSubmit: {
     height: 18,
@@ -250,7 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     height: 40,
     width: 40,
-    backgroundColor: "#2671ff",
+    backgroundColor: "red",
     margin: 10,
   },
   msgBox: {

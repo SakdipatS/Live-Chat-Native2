@@ -29,11 +29,11 @@ export default function App() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 50}
     >
       <Provider store={store}>
-        <SafeAreaView
+        {/* <SafeAreaView
           style={{
             flex: 0,
           }}
-        />
+        /> */}
         <SafeAreaView
           style={{
             flex: 1,
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// https://reactnative.dev/docs/layout-props
+// https://docs.expo.dev/build-reference/apk/

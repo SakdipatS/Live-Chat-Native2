@@ -33,23 +33,13 @@ export default function ChatStart({ navigation }) {
     subject: "",
   });
 
-  useFocusEffect(
-    React.useCallback(() => {
-      // Update formData with data from Redux
-      setFormData({
-        username: register.username || "",
-        phoneNumber: register.phoneNumber || "",
-        subject: register.subject || "",
-      });
-    }, [register])
-  );
-
   useEffect(() => {
     initDatabase();
     const fetchData = async () => {
       console.log("inside fetch");
       try {
         const userData = await fetchUserDataFromDatabase();
+        console.log("............"+ JSON.stringify(userData));
         if (userData) {
           console.log("go navigate " + userData.username);
           dispatch(addRegister(userData));
@@ -85,18 +75,21 @@ export default function ChatStart({ navigation }) {
       // Display an error message or handle the case where the phone number length is not valid
       return;
     }
+  Keyboard.dismiss();
 
-    try {
-      const insertedUser = await insertUser(formData);
-      dispatch(addRegister(formData));
-      const socketData = {
-        id: socket.id,
-      };
-      navigation.navigate("ChatBox", { socketData });
-    } catch (error) {
-      console.error("Error inserting user:", error);
-    }
-  };
+  try {
+    const insertedUser = await insertUser(formData);
+    dispatch(addRegister(formData));
+    const socketData = {
+      id: socket.id,
+    };
+    console.log("test")
+    navigation.navigate("ChatBox", { socketData });
+
+  } catch (error) {
+    console.error("Error inserting user:", error);
+  }
+};
 
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);

@@ -22,7 +22,13 @@ export const initDatabase = () => {
 };
 
 export const insertUser = (formData) => {
+  console.log("Inserting user:", formData);
   const { username, phoneNumber, subject } = formData;
+
+  if (!username || !phoneNumber || !subject) {
+    console.error("Invalid formData:", formData);
+    return Promise.reject(new Error("Invalid formData"));
+  }
 
   return new Promise((resolve, reject) => {
     db.transaction((tx) => {
@@ -56,6 +62,7 @@ export const fetchUserDataFromDatabase = () => {
         "SELECT username, phoneNumber, subject FROM users ORDER BY id DESC LIMIT 1",
         [],
         (_, { rows: { _array } }) => {
+          console.log("fetch data : " , JSON.stringify(_array[0]))
           if (_array.length > 0) {
             resolve({
               username: _array[0].username,
