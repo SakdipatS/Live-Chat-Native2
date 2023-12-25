@@ -41,6 +41,7 @@ export default function ChatBox() {
   const dispatch = useDispatch();
   const [checked, setChecked] = useState(false);
   const toggleChecked = () => setChecked((value) => !value);
+  
 
     useEffect(() => {
     initDatabase();
@@ -78,10 +79,6 @@ export default function ChatBox() {
   const postChat = (data) => {
     const { message, sender } = data;
 
-    Image.prefetch(sender.avatar)
-    .then(() => console.log('Image prefetch successful'))
-    .catch((error) => console.error('Image prefetch error:', error));
-
     setMessages((prevMessages) => [
       ...prevMessages,
       {
@@ -104,14 +101,6 @@ export default function ChatBox() {
 
   useEffect(() => {
     chatWindowRef.current.scrollToEnd({ animated: true });
-  }, [messages]);
-
-  useEffect(() => {
-    messages.forEach((msg) => {
-      Image.prefetch(msg.sender.avatar)
-        .then(() => console.log('Image prefetch successful'))
-        .catch((error) => console.error('Image prefetch error:', error));
-    });
   }, [messages]);
   
 

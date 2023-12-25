@@ -9,6 +9,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import arrowDown from "../assets/arrow-down.png";
@@ -67,12 +68,14 @@ export default function ChatStart({ navigation }) {
   const handleSubmit = async () => {
     if (!formData.username || !formData.phoneNumber || !formData.subject) {
       // setErrorMessage("Please fill in all required fields.");
+    Alert.alert("Error", "Please fill in all required fields.");
       return;
     }
     if (
       !(formData.phoneNumber.length >= 9 && formData.phoneNumber.length <= 10)
     ) {
       // Display an error message or handle the case where the phone number length is not valid
+      Alert.alert("Error", "Please enter a phone number with 9 to 10 digits.");
       return;
     }
   Keyboard.dismiss();
